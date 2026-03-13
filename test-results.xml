@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="Mocha Tests" time="0.0100" tests="3" failures="0">
-  <testsuite name="Root Suite" timestamp="2026-03-13T09:45:15" tests="0" time="0.0000" failures="0">
+<testsuites name="Mocha Tests" time="0.0140" tests="3" failures="0">
+  <testsuite name="Root Suite" timestamp="2026-03-13T10:35:05" tests="0" time="0.0000" failures="0">
   </testsuite>
-  <testsuite name="SimpleApplication" timestamp="2026-03-13T09:45:15" tests="3" file="/Users/joshokeeffe/Documents/University/Courses/Semsester Two/DevOpsSec/Assignment/SimpleApplication/test/test.js" time="0.0100" failures="0">
-    <testcase name="SimpleApplication should return 200 for GET /" time="0.0080" classname="should return 200 for GET /">
+  <testsuite name="SimpleApplication" timestamp="2026-03-13T10:35:05" tests="3" file="/Users/joshokeeffe/Documents/University/Courses/Semsester Two/DevOpsSec/Assignment/SimpleApplication/test/test.js" time="0.0140" failures="0">
+    <testcase name="SimpleApplication should return 200 for GET /" time="0.0110" classname="should return 200 for GET /">
     </testcase>
-    <testcase name="SimpleApplication should contain the page title" time="0.0010" classname="should contain the page title">
+    <testcase name="SimpleApplication should contain the page title" time="0.0020" classname="should contain the page title">
     </testcase>
     <testcase name="SimpleApplication should contain the sample list content" time="0.0010" classname="should contain the sample list content">
     </testcase>
