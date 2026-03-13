@@ -1,4 +1,4 @@
-# Devops Example Project
+# Devops CA Project
 
 ## Install Dependencies
 
