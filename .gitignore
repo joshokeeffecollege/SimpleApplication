@@ -1,1 +1,4 @@
 node_modules/
+privatekey.pem
+server.crt
+certificate.pem

@@ -1,37 +1,86 @@
 version: 2.1
 
-jobs:
-  build_and_test:
-    docker:
-      - image: cimg/node:20.11
-    working_directory: ~/project
-    steps:
-      - checkout
-
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "package-lock.json" }}
-            - v1-dependencies-
-
-      - run:
-          name: Install dependencies
-          command: npm install
-
-      - run:
-          name: Run tests
-          command: npm test
-
-      - save_cache:
-          key: v1-dependencies-{{ checksum "package-lock.json" }}
-          paths:
-            - node_modules
-
 workflows:
   version: 2
-  build_test_workflow:
+  build_test_deploy:
     jobs:
-      - build_and_test:
+      - build:
           filters:
             branches:
               only:
                 - main
+
+      - test:
+          requires:
+            - build
+          filters:
+            branches:
+              only:
+                - main
+
+      - deploy:
+          requires:
+            - test
+          filters:
+            branches:
+              only:
+                - main
+
+jobs:
+  build:
+    working_directory: ~/SimpleApplication
+    docker:
+      - image: cimg/node:20.11
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - dependency-cache-{{ checksum "package-lock.json" }}
+      - run:
+          name: Install dependencies
+          command: npm install
+      - save_cache:
+          key: dependency-cache-{{ checksum "package-lock.json" }}
+          paths:
+            - ~/SimpleApplication/node_modules
+
+  test:
+    working_directory: ~/SimpleApplication
+    docker:
+      - image: cimg/node:20.11
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - dependency-cache-{{ checksum "package-lock.json" }}
+      - run:
+          name: Install dependencies
+          command: npm install
+      - run:
+          name: Run tests
+          command: npm test
+
+  deploy:
+    working_directory: ~/SimpleApplication
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - add_ssh_keys
+      - run:
+          name: Add EC2 host to known hosts
+          command: |
+            mkdir -p ~/.ssh
+            ssh-keyscan -H "$EC2_PUBLIC_DNS" >> ~/.ssh/known_hosts
+      - run:
+          name: Deploy application
+          command: |
+            ssh "$EC2_USERNAME@$EC2_PUBLIC_DNS" '
+              if [ ! -d ~/SimpleApplication ]; then
+                git clone https://github.com/joshokeeffecollege/SimpleApplication.git ~/SimpleApplication
+              fi
+              cd ~/SimpleApplication
+              git pull origin main
+              chmod +x deploy.sh
+              ./deploy.sh
+            '
