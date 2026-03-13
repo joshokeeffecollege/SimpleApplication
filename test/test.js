@@ -1,65 +1,72 @@
-const assert = require("assert");
-const http = require("http");
+const test = require("node:test");
+const assert = require("node:assert");
+const http = require("node:http");
 const app = require("../app");
 
-describe("SimpleApplication", function () {
-  let server;
-  let port;
+let server;
+let port;
 
-  before(function (done) {
+function startServer() {
+  return new Promise((resolve) => {
     server = http.createServer(app);
-    server.listen(0, function () {
+    server.listen(0, () => {
       port = server.address().port;
-      done();
+      resolve();
     });
   });
+}
 
-  after(function (done) {
-    server.close(done);
+function stopServer() {
+  return new Promise((resolve, reject) => {
+    server.close((err) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+      resolve();
+    });
   });
+}
 
-  it("should return 200 for GET /", function (done) {
+function getResponse(path) {
+  return new Promise((resolve, reject) => {
     http
-      .get(`http://127.0.0.1:${port}/`, function (res) {
-        assert.strictEqual(res.statusCode, 200);
-        done();
-      })
-      .on("error", done);
-  });
-
-  it("should contain the page title", function (done) {
-    http
-      .get(`http://127.0.0.1:${port}/`, function (res) {
+      .get(`http://127.0.0.1:${port}${path}`, (res) => {
         let body = "";
 
         res.on("data", (chunk) => {
           body += chunk;
         });
 
-        res.on("end", function () {
-          assert.ok(body.includes("Simple Application"));
-          done();
+        res.on("end", () => {
+          resolve({ statusCode: res.statusCode, body });
         });
       })
-      .on("error", done);
+      .on("error", reject);
   });
+}
 
-  it("should contain the sample list content", function (done) {
-    http
-      .get(`http://127.0.0.1:${port}/`, function (res) {
-        let body = "";
+test.before(async () => {
+  await startServer();
+});
 
-        res.on("data", (chunk) => {
-          body += chunk;
-        });
+test.after(async () => {
+  await stopServer();
+});
 
-        res.on("end", function () {
-          assert.ok(body.includes("Coffee"));
-          assert.ok(body.includes("Tea"));
-          assert.ok(body.includes("Milk"));
-          done();
-        });
-      })
-      .on("error", done);
-  });
+test("should return 200 for GET /", async () => {
+  const res = await getResponse("/");
+  assert.strictEqual(res.statusCode, 200);
+});
+
+test("should contain the page title", async () => {
+  const res = await getResponse("/");
+  assert.ok(res.body.includes("Simple Application"));
+});
+
+test("should contain the sample list content", async () => {
+  const res = await getResponse("/");
+  assert.ok(res.body.includes("Coffee"));
+  assert.ok(res.body.includes("Tea"));
+  assert.ok(res.body.includes("Milk"));
 });
